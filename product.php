@@ -82,6 +82,9 @@ require_once('process/config.php'); // Connect to the database
       overflow-x: auto;
       height: 550px;
     }
+    .cursor-pointer{
+      margin-left: 95%;
+    }
   </style>
 </head>
 
@@ -186,44 +189,12 @@ require_once('process/config.php'); // Connect to the database
                       <td class="px-6 py-4 text-gray-600">' . $row['quantity'] . '</td>
                       <td class="px-6 py-4">
                         <div class="flex space-x-2">
-                          <button id="openUpdateModel" class="bg-[#1abc9c] text-white px-4 py-1 rounded hover:bg-teal-600 text-sm">Edit</button>
+                          <button class="edit-product-btn bg-[#1abc9c] text-white px-4 py-1 rounded hover:bg-teal-600 text-sm">Edit</button>
                           <button class="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600 text-sm">Delete</button>
                         </div>
                       </td>
                     </tr>';
-        
-            ?>
-            <div id="updateProductModal" class="modal">
-                    <div class="modal-content bg-white p-4 rounded-xl shadow">
-                      <span class="close-btn" id="closeUpdateProductModal">&times;</span>
-                      <h3 class="text-xl font-semibold text-[#1abc9c] mb-4">Update Product</h3>
-                      
-                      <form action="update_product.php" method="POST" enctype="multipart/form-data">
-                        <input type="hidden" name="product_id" value="<?php echo $row['product_id']; ?>">
-                        <label for="name" class="block text-gray-600">Product Name</label>
-                        <input type="text" name="name" id="name" value="<?php echo $row['name']; ?>" required class="w-full p-3 mb-4 border rounded-lg">
-
-                        <label for="category" class="block text-gray-600">Category</label>
-                        <select name="category_id" id="category" required class="w-full p-3 mb-4 border rounded-lg">';
-                          <?php
-                          $categories = $conn->query("SELECT * FROM categories");
-                          while ($category = $categories->fetch_assoc()) {
-                            $selected = ($category['category_id'] == $row['category_id']) ? 'selected' : '';
-                            echo "<option value='{$category['category_id']}' $selected>{$category['c_name']}</option>";
-                          }
-                          ?>
-                          </select>
-                        <label for="price" class="block text-gray-600">Price</label>
-                        <input type="number" name="price" id="price" value="<?php echo $row['price']; ?>" required class="w-full p-3 mb-4 border rounded-lg">
-                        <label for="quantity" class="block text-gray-600">Quantity</label>
-                        <input type="number" name="quantity" id="quantity" value="<?php echo $row['quantity']; ?>" required class="w-full p-3 mb-4 border rounded-lg">
-                        <label for="image" class="block text-gray-600">Image</label>
-                        <input type="file" name="image" id="image" class="w-full p-3 mb-4 border rounded-lg">
-                        <button type="submit" name="update_product" class="bg-[#1abc9c] text-white px-6 py-3 rounded-lg hover:bg-teal-600 w-full">Update</button>
-                      </form>
-                    </div>
-                  </div>
-            <?php
+                    
                 }
               } else {
                 // Updated message with correct colspan and styling
@@ -290,69 +261,102 @@ require_once('process/config.php'); // Connect to the database
     </div>
   </div>
 
+  <!-- Update Model -->   
+  <div id="updateProductModal" class="modal">
+    <div class="modal-content bg-white p-4 rounded-xl shadow">
+      <span class="cursor-pointer px-2 hover:bg-red-500 rounded-xl" id="closeUpdateProductModal">&times;</span>
+      <h3 class="text-xl font-semibold text-[#1abc9c] mb-4">Update Product</h3>
+      <form action="update_product.php" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="product_id" id="modalProductId">
+        <label for="modalName" class="block text-gray-600">Product Name</label>
+        <input type="text" name="name" id="modalName" required class="w-full p-3 mb-4 border rounded-lg">
+
+        <label for="modalCategory" class="block text-gray-600">Category</label>
+        <select name="category_id" id="modalCategory" required class="w-full p-3 mb-4 border rounded-lg">
+          <?php
+          $categories = $conn->query("SELECT * FROM categories");
+          while ($category = $categories->fetch_assoc()) {
+            echo "<option value='{$category['category_id']}'>{$category['c_name']}</option>";
+          }
+          ?>
+        </select>
+
+        <label for="modalPrice" class="block text-gray-600">Price</label>
+        <input type="number" name="price" id="modalPrice" required class="w-full p-3 mb-4 border rounded-lg">
+
+        <label for="modalQuantity" class="block text-gray-600">Quantity</label>
+        <input type="number" name="quantity" id="modalQuantity" required class="w-full p-3 mb-4 border rounded-lg">
+
+        <label for="modalImage" class="block text-gray-600">Image</label>
+        <input type="file" name="image" id="modalImage" class="w-full p-3 mb-4 border rounded-lg">
+        <div id="currentImageContainer" class="mb-4"></div>
+
+        <button type="submit" name="update_product" class="bg-[#1abc9c] text-white px-6 py-3 rounded-lg hover:bg-teal-600 w-full">Update</button>
+      </form>
+    </div>
+  </div>
+
   <script>
     // Modal handling
-    document.getElementById('searchInput').addEventListener('input', function () {
-   const searchQuery = this.value.toLowerCase();
-   const rows = document.querySelectorAll('#productGrid tbody tr');
-  let hasVisible = false;
-  
-  rows.forEach(row => {
-    // Skip the "no products" row if it exists
-    if (row.querySelector('td[colspan]')) return;
-    
-    const productName = row.dataset.name;
-    const isVisible = productName.includes(searchQuery);
-    row.style.display = isVisible ? '' : 'none';
-    if (isVisible) hasVisible = true;
-  });
+    document.getElementById('searchInput').addEventListener('input', function() {
+      const searchQuery = this.value.toLowerCase();
+      const rows = document.querySelectorAll('#productGrid tbody tr');
+      let hasVisible = false;
+      
+      rows.forEach(row => {
+        if (row.querySelector('td[colspan]')) return;
+        const productName = row.dataset.name;
+        const isVisible = productName.includes(searchQuery);
+        row.style.display = isVisible ? '' : 'none';
+        if (isVisible) hasVisible = true;
+      });
 
-  const noProductMessage = document.getElementById('noProductMessage');
-  noProductMessage.style.display = hasVisible ? 'none' : 'block';
-});
+      const noProductMessage = document.getElementById('noProductMessage');
+      noProductMessage.style.display = hasVisible ? 'none' : 'block';
+    });
 
-// update model  start
-      const updateProductModal = document.getElementById('updateProductModal');
-      const openUpdateModel = document.getElementById('openUpdateModel');
-      const closeUpdateProductModal = document.getElementById('closeUpdateProductModal');
-  
-      openUpdateModel.addEventListener('click', function () {
-        updateProductModal.style.display = 'flex';
+    // Update Modal - New Implementation
+    document.querySelectorAll('.edit-product-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const row = this.closest('tr');
+        const productId = row.querySelector('td:first-child').textContent;
+        const productName = row.querySelector('td:nth-child(3)').textContent;
+        const category = row.querySelector('td:nth-child(4)').textContent;
+        const price = row.querySelector('td:nth-child(5)').textContent.replace('$', '');
+        const quantity = row.querySelector('td:nth-child(6)').textContent;
+        const imageSrc = row.querySelector('img').src;
+        
+        // Populate modal fields
+        document.getElementById('modalProductId').value = productId;
+        document.getElementById('modalName').value = productName;
+        document.getElementById('modalPrice').value = price;
+        document.getElementById('modalQuantity').value = quantity;
+        
+        // Set category selection
+        const categorySelect = document.getElementById('modalCategory');
+        for (let i = 0; i < categorySelect.options.length; i++) {
+          if (categorySelect.options[i].text === category) {
+            categorySelect.selectedIndex = i;
+            break;
+          }
+        }
+        
+        // Show current image
+        const imageContainer = document.getElementById('currentImageContainer');
+        imageContainer.innerHTML = `
+          <p class="text-sm text-gray-600 mb-2">Current Image:</p>
+          <img src="${imageSrc}" class="w-20 h-20 rounded object-cover">
+        `;
+        
+        // Show modal
+        document.getElementById('updateProductModal').style.display = 'flex';
       });
-  
-      closeUpdateProductModal.addEventListener('click', function () {
-        updateProductModal.style.display = 'none';
-      });
-  // update model 
+    });
 
-
-  
-      // Product Modal start
-      const productModal = document.getElementById('productModal');
-      const openProductModal = document.getElementById('openProductModal');
-      const closeProductModal = document.getElementById('closeProductModal');
-  
-      openProductModal.addEventListener('click', function () {
-        productModal.style.display = 'flex';
-      });
-  
-      closeProductModal.addEventListener('click', function () {
-        productModal.style.display = 'none';
-      });
-      // Product Modal end
-  
-      // Category Modal
-      const categoryModal = document.getElementById('categoryModal');
-      const openCategoryModal = document.getElementById('openModal');
-      const closeCategoryModal = document.getElementById('closeCategoryModal');
-  
-      openCategoryModal.addEventListener('click', function () {
-        categoryModal.style.display = 'flex';
-      });
-  
-      closeCategoryModal.addEventListener('click', function () {
-        categoryModal.style.display = 'none';
-      });
+    // Close Update Modal
+    document.getElementById('closeUpdateProductModal').addEventListener('click', function() {
+      document.getElementById('updateProductModal').style.display = 'none';
+    });
   
       // Sidebar Toggle for Mobile
       const toggleSidebarButton = document.getElementById('toggleSidebar');
