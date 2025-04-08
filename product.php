@@ -186,11 +186,44 @@ require_once('process/config.php'); // Connect to the database
                       <td class="px-6 py-4 text-gray-600">' . $row['quantity'] . '</td>
                       <td class="px-6 py-4">
                         <div class="flex space-x-2">
-                          <button class="bg-[#1abc9c] text-white px-4 py-1 rounded hover:bg-teal-600 text-sm">Edit</button>
+                          <button id="openUpdateModel" class="bg-[#1abc9c] text-white px-4 py-1 rounded hover:bg-teal-600 text-sm">Edit</button>
                           <button class="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600 text-sm">Delete</button>
                         </div>
                       </td>
                     </tr>';
+        
+            ?>
+            <div id="updateProductModal" class="modal">
+                    <div class="modal-content bg-white p-4 rounded-xl shadow">
+                      <span class="close-btn" id="closeUpdateProductModal">&times;</span>
+                      <h3 class="text-xl font-semibold text-[#1abc9c] mb-4">Update Product</h3>
+                      
+                      <form action="update_product.php" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="product_id" value="<?php echo $row['product_id']; ?>">
+                        <label for="name" class="block text-gray-600">Product Name</label>
+                        <input type="text" name="name" id="name" value="<?php echo $row['name']; ?>" required class="w-full p-3 mb-4 border rounded-lg">
+
+                        <label for="category" class="block text-gray-600">Category</label>
+                        <select name="category_id" id="category" required class="w-full p-3 mb-4 border rounded-lg">';
+                          <?php
+                          $categories = $conn->query("SELECT * FROM categories");
+                          while ($category = $categories->fetch_assoc()) {
+                            $selected = ($category['category_id'] == $row['category_id']) ? 'selected' : '';
+                            echo "<option value='{$category['category_id']}' $selected>{$category['c_name']}</option>";
+                          }
+                          ?>
+                          </select>
+                        <label for="price" class="block text-gray-600">Price</label>
+                        <input type="number" name="price" id="price" value="<?php echo $row['price']; ?>" required class="w-full p-3 mb-4 border rounded-lg">
+                        <label for="quantity" class="block text-gray-600">Quantity</label>
+                        <input type="number" name="quantity" id="quantity" value="<?php echo $row['quantity']; ?>" required class="w-full p-3 mb-4 border rounded-lg">
+                        <label for="image" class="block text-gray-600">Image</label>
+                        <input type="file" name="image" id="image" class="w-full p-3 mb-4 border rounded-lg">
+                        <button type="submit" name="update_product" class="bg-[#1abc9c] text-white px-6 py-3 rounded-lg hover:bg-teal-600 w-full">Update</button>
+                      </form>
+                    </div>
+                  </div>
+            <?php
                 }
               } else {
                 // Updated message with correct colspan and styling
@@ -260,8 +293,8 @@ require_once('process/config.php'); // Connect to the database
   <script>
     // Modal handling
     document.getElementById('searchInput').addEventListener('input', function () {
-  const searchQuery = this.value.toLowerCase();
-  const rows = document.querySelectorAll('#productGrid tbody tr');
+   const searchQuery = this.value.toLowerCase();
+   const rows = document.querySelectorAll('#productGrid tbody tr');
   let hasVisible = false;
   
   rows.forEach(row => {
@@ -277,6 +310,58 @@ require_once('process/config.php'); // Connect to the database
   const noProductMessage = document.getElementById('noProductMessage');
   noProductMessage.style.display = hasVisible ? 'none' : 'block';
 });
+
+// update model  start
+      const updateProductModal = document.getElementById('updateProductModal');
+      const openUpdateModel = document.getElementById('openUpdateModel');
+      const closeUpdateProductModal = document.getElementById('closeUpdateProductModal');
+  
+      openUpdateModel.addEventListener('click', function () {
+        updateProductModal.style.display = 'flex';
+      });
+  
+      closeUpdateProductModal.addEventListener('click', function () {
+        updateProductModal.style.display = 'none';
+      });
+  // update model 
+
+
+  
+      // Product Modal start
+      const productModal = document.getElementById('productModal');
+      const openProductModal = document.getElementById('openProductModal');
+      const closeProductModal = document.getElementById('closeProductModal');
+  
+      openProductModal.addEventListener('click', function () {
+        productModal.style.display = 'flex';
+      });
+  
+      closeProductModal.addEventListener('click', function () {
+        productModal.style.display = 'none';
+      });
+      // Product Modal end
+  
+      // Category Modal
+      const categoryModal = document.getElementById('categoryModal');
+      const openCategoryModal = document.getElementById('openModal');
+      const closeCategoryModal = document.getElementById('closeCategoryModal');
+  
+      openCategoryModal.addEventListener('click', function () {
+        categoryModal.style.display = 'flex';
+      });
+  
+      closeCategoryModal.addEventListener('click', function () {
+        categoryModal.style.display = 'none';
+      });
+  
+      // Sidebar Toggle for Mobile
+      const toggleSidebarButton = document.getElementById('toggleSidebar');
+      const sidebar = document.getElementById('sidebar');
+  
+      toggleSidebarButton.addEventListener('click', function () {
+        sidebar.classList.toggle('hidden');
+        sidebar.classList.toggle('block');
+      });
   </script>
 </body>
 
