@@ -193,11 +193,19 @@ require_once('process/config.php'); // Connect to the database
                     </tr>';
                 }
               } else {
-                echo '<tr><td colspan="6" class="px-6 py-4 text-gray-500">No products found.</td></tr>';
+                // Updated message with correct colspan and styling
+                echo '<tr>
+                        <td colspan="7" class="px-6 py-4 text-center bg-red-50 text-red-800 font-semibold">
+                          No products found in the database.
+                        </td>
+                      </tr>';
               }
               ?>
             </tbody>
           </table>
+          <div id="noProductMessage" class="hidden p-4 mb-4 bg-red-50 text-red-800 rounded-lg text-center">
+            No products match your search criteria.
+          </div>
         </div>
       </div>
     </div>
@@ -251,33 +259,24 @@ require_once('process/config.php'); // Connect to the database
 
   <script>
     // Modal handling
-    document.getElementById('openProductModal').addEventListener('click', () => {
-      document.getElementById('productModal').style.display = 'flex';
-    });
-    document.getElementById('closeProductModal').addEventListener('click', () => {
-      document.getElementById('productModal').style.display = 'none';
-    });
-    document.getElementById('openModal').addEventListener('click', () => {
-      document.getElementById('categoryModal').style.display = 'flex';
-    });
-    document.getElementById('closeCategoryModal').addEventListener('click', () => {
-      document.getElementById('categoryModal').style.display = 'none';
-    });
-
-    // Sidebar toggle for mobile
-    document.getElementById('toggleSidebar').addEventListener('click', () => {
-      document.getElementById('sidebar').classList.toggle('hidden');
-    });
-
-    // Search filter
     document.getElementById('searchInput').addEventListener('input', function () {
-      const searchQuery = this.value.toLowerCase();
-      const rows = document.querySelectorAll('#productGrid tbody tr');
-      rows.forEach(row => {
-        const productName = row.dataset.name;
-        row.style.display = productName.includes(searchQuery) ? '' : 'none';
-      });
-    });
+  const searchQuery = this.value.toLowerCase();
+  const rows = document.querySelectorAll('#productGrid tbody tr');
+  let hasVisible = false;
+  
+  rows.forEach(row => {
+    // Skip the "no products" row if it exists
+    if (row.querySelector('td[colspan]')) return;
+    
+    const productName = row.dataset.name;
+    const isVisible = productName.includes(searchQuery);
+    row.style.display = isVisible ? '' : 'none';
+    if (isVisible) hasVisible = true;
+  });
+
+  const noProductMessage = document.getElementById('noProductMessage');
+  noProductMessage.style.display = hasVisible ? 'none' : 'block';
+});
   </script>
 </body>
 
