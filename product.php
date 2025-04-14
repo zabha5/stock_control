@@ -16,6 +16,7 @@ require_once('process/config.php'); // Connect to the database
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
     integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="./tailwind.min.css" rel="stylesheet">
   <style>
     body {
       background-color: #f3f4f6;
@@ -67,7 +68,7 @@ require_once('process/config.php'); // Connect to the database
       padding: 20px;
       border-radius: 8px;
       width: 90%;
-      max-width: 500px;
+      max-width: 600px;
     }
 
     .close-btn {
@@ -84,6 +85,11 @@ require_once('process/config.php'); // Connect to the database
     }
     .cursor-pointer{
       margin-left: 95%;
+    }
+    #scroll-category{
+      overflow-y: auto;
+      overflow-x: hidden;
+      height: 400px;
     }
   </style>
 </head>
@@ -103,25 +109,15 @@ require_once('process/config.php'); // Connect to the database
     </div>
 
     <!-- Sidebar -->
-    <div id="sidebar" class="w-64 sidebar h-screen shadow-lg p-6 hidden sm:block">
-      <h1 class="text-2xl font-bold mb-6 text-[#1abc9c]">Stock System</h1>
-      <ul>
-        <li class="mb-4 font-bold"><a href="dashboard.php" class="ml-4">Dashboard</a></li>
-        <li class="mb-4 font-bold"><a href="product.php" class="ml-4 text-[#1abc9c] text-sm">Products</a></li>
-        <li class="mb-4 font-bold"><a href="stock_out.php" class="ml-4">Stock Out</a></li>
-        <li class="mb-4 font-bold"><a href="sales.php" class="ml-4">Sales</a></li>
-        <li class="mb-4 font-bold"><a href="returns.php" class="ml-4">Returns</a></li>
-        <li class="mb-4 font-bold"><a href="users.php" class="ml-4">Users</a></li>
-        <li class="mb-4 font-bold"><a href="supplier.php" class="ml-4">Supplier</a></li>
-        <li class="mb-4 font-bold"><a href="#" class="ml-4">Reports</a></li>
-      </ul>
-    </div>
+   <?php
+   require('./process/sidebar.php');
+   ?>
 
     <!-- Main Content -->
     <div class="flex-1 p-2">
       <!-- Action Buttons & Search -->
       <div class="p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <button id="openProductModal"
+        <button id="addProductButton"
           class="bg-[#1abc9c] text-white px-6 py-3 rounded-lg hover:bg-teal-600 transition duration-200 ease-in-out">
           Add Product
         </button>
@@ -131,7 +127,7 @@ require_once('process/config.php'); // Connect to the database
             class="w-full p-3 rounded-xl border border-[#1abc9c] focus:outline-none focus:ring-2 focus:ring-[#1abc9c] text-gray-700 font-semibold placeholder:text-gray-500 transition duration-200 ease-in-out" />
         </div>
 
-        <button id="openModal"
+        <button id="addCategoryButton"
           class="bg-[#1abc9c] text-white px-6 py-3 rounded-lg hover:bg-teal-600 transition duration-200 ease-in-out">
           Add New Category
         </button>
@@ -217,7 +213,7 @@ require_once('process/config.php'); // Connect to the database
     <!-- Add Product Modal -->
     <div id="productModal" class="modal">
       <div class="modal-content relative">
-        <span class="close-btn" id="closeProductModal">&times;</span>
+        <span class="close-btn px-2 hover:bg-red-500 hover:rounded hover:text-white" id="closeProductModal">&times;</span>
         <h3 class="text-xl font-semibold text-[#1abc9c] mb-4">Add New Product</h3>
         <form action="add_product.php" method="POST" enctype="multipart/form-data">
           <label for="name" class="block text-gray-600">Product Name</label>
@@ -250,13 +246,47 @@ require_once('process/config.php'); // Connect to the database
     <!-- Category Modal -->
     <div id="categoryModal" class="modal">
       <div class="modal-content relative">
-        <span class="close-btn" id="closeCategoryModal">&times;</span>
+        <span class="close-btn px-2 hover:bg-red-500 hover:px-2 hover:rounded" id="closeCategoryModal">&times;</span>
         <h3 class="text-xl font-semibold text-[#1abc9c] mb-4">Add New Category</h3>
         <form action="category.php" method="POST">
           <label for="c_name" class="block text-gray-600">Category Name</label>
           <input type="text" name="c_name" id="c_name" required class="w-full p-3 mb-4 border rounded-lg">
           <button type="submit" name="add_category" class="bg-[#1abc9c] text-white px-6 py-3 rounded-lg hover:bg-teal-600 w-full">Submit</button>
         </form>
+        <!-- seacrh bar -->
+        <input type="text" id="searchCategoryInput" placeholder="Search for categories..."
+          class="w-3/4 p-2 rounded-xl border focus:outline-none focus:ring-2 m-2  
+          focus:ring-[#1abc9c] text-gray-700 font-semibold placeholder:text-gray-500 transition duration-200 ease-in-out" />
+        <div class="border rounded p-2 m-2" id="scroll-category">
+  
+         <table class="min-w-full divide-y divide-gray-200 text-sm sm:text-base">
+           <tr class="bg-[#1abc9c] text-white">
+             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">#</th>
+             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Category Name</th>
+             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Action</th>
+           </tr>
+           <?php
+           $sql = "SELECT * FROM categories";
+           $result = $conn->query($sql);
+           if ($result->num_rows > 0) {
+             while ($row = $result->fetch_assoc()) {
+               echo '<tr class="card">
+               <td class="px-6 py-4 border-b text-xl">.</td>
+               <td class="px-6 py-4 border-b">'. $row['c_name'] .'</td> 
+               <td class="px-6 py-4 border-b">
+               <div class="flex space-x-2">
+                          <button class="edit-product-btn bg-[#1abc9c] text-white px-4 py-1 rounded hover:bg-teal-600 text-sm">Edit</button>
+                          <button class="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600 text-sm">Delete</button>
+                        </div>
+               </td>
+               </tr>';
+
+             } 
+           }
+    
+        ?>
+         </table>
+        </div>
       </div>
     </div>
   </div>
@@ -352,7 +382,7 @@ require_once('process/config.php'); // Connect to the database
         document.getElementById('updateProductModal').style.display = 'flex';
       });
     });
-
+          
     // Close Update Modal
     document.getElementById('closeUpdateProductModal').addEventListener('click', function() {
       document.getElementById('updateProductModal').style.display = 'none';
@@ -366,6 +396,35 @@ require_once('process/config.php'); // Connect to the database
         sidebar.classList.toggle('hidden');
         sidebar.classList.toggle('block');
       });
+      // add category
+      const addCategoryButton = document.getElementById('addCategoryButton');
+      const categoryModal = document.getElementById('categoryModal');
+
+      addCategoryButton.addEventListener('click', function () {
+        categoryModal.style.display = 'flex';
+        
+        });
+
+      // Close Category Modal
+      document.getElementById('closeCategoryModal').addEventListener('click', function() {
+        document.getElementById('categoryModal').style.display = 'none';
+      });
+      //  add product
+      const addProductButton = document.getElementById('addProductButton');
+      const productModal = document.getElementById('productModal');
+
+      addProductButton.addEventListener('click', function () {
+        productModal.style.display = 'flex';
+
+        });
+      // Close Product Modal  
+      document.getElementById('closeProductModal').addEventListener('click', function() {
+        document.getElementById('productModal').style.display = 'none'; 
+
+      });
+
+
+
   </script>
 </body>
 

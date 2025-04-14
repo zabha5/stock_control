@@ -25,6 +25,8 @@ $salesCount = $conn->query("SELECT COUNT(*) AS count FROM sales")->fetch_assoc()
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Responsive Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body {
       background-color: #f3f4f6;
@@ -58,7 +60,7 @@ $salesCount = $conn->query("SELECT COUNT(*) AS count FROM sales")->fetch_assoc()
 
   <!-- Sidebar -->
   <aside class="w-full lg:w-64 md:w-full sm:w-full sidebar bg-white shadow-lg p-6">
-    <h1 class="text-2xl font-bold mb-6 text-[#1abc9c]">Stock System</h1>
+    <h1 class="text-2xl font-bold mb-6 text-[#1abc9c]"><i class="ph ph-shopping-bag text-2xl text-primary-600"></i> ShopNest <br> <span class="text-sm text-black">Admin</span> </h1>
     <ul>
       <li class="mb-4 font-bold"><a href="dashboard.php" class="text-[#1abc9c] text-sm">Dashboard</a></li>
       <li class="mb-4 font-bold"><a href="product.php">Products</a></li>
@@ -105,7 +107,7 @@ $salesCount = $conn->query("SELECT COUNT(*) AS count FROM sales")->fetch_assoc()
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-2 gap-6">
 
           <table class="min-w-full divide-y divide-gray-200 text-sm sm:text-base" id="productGrid">
-          <thead class="bg-[#1abc9c] text-white w-full">
+          <thead class="bg-[#1abc9c] text-white w-full"> 
               <tr>
                 <th id="table-l" class="px-14  py-3 text-left text-xs font-medium uppercase tracking-wider">Product</th>
                 <th class="px-10  py-3 text-left text-xs font-medium uppercase tracking-wider">Category</th>
